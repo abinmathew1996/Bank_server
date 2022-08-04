@@ -52,6 +52,141 @@
     }
   }
 
+  //login
+  const login = (acno,pswd) =>{
+
+    if (acno in userDetails) {
+      if (pswd == userDetails[acno]['password']) {
+        currentUser = userDetails[acno]['username'];
+        currentAcno = acno
+
+        return  {
+          statusCode: 200,
+          status:true,
+          message:'Successfully logged in'
+        }
+      } else {
+        return  {
+          statusCode: 401,
+          status:false,
+          message:'incorrect password'
+        }
+      }
+    } else {
+      return  {
+        statusCode: 401,
+        status:false,
+        message:'user doesnot exist'
+      }
+    }
+  }
+
+   //deposit
+   const deposit = (acno,pswd,amt)=> {
+    var amount = parseInt(amt);
+
+    if (acno in userDetails) {
+      if (pswd == userDetails[acno]['password']) {
+        userDetails[acno]['balance'] += amount;
+        userDetails[acno]['transaction'].push({
+          type: 'credit',
+          amount,
+          balance:userDetails[acno]['balance']
+        })
+
+        console.log(userDetails);
+
+        return {
+          statusCode: 200,
+          status:true,
+          message:`${amount} credited and newBalance is ${userDetails[acno]['balance']} `
+        }
+
+      } else {
+        return {
+        statusCode: 401,
+        status:false,
+        message:'Incorrect password'
+      }
+      }
+    } else {
+      return {
+        statusCode: 401,
+        status:false,
+        message:'user doesnot exist'
+      }
+    }
+  }
+
+    //withdraw
+    const withdraw=(acno1, pswd1, amt1)=> {
+      var amount = parseInt(amt1);
+  
+      if (acno1 in userDetails) {
+        if (pswd1 == userDetails[acno1]['password']) {
+          if (userDetails[acno1]['balance'] >= amount) {
+            userDetails[acno1]['balance'] -= amount;
+  
+            userDetails[acno1]['transaction'].push({
+              type: 'debit',
+              amount,
+              balance:userDetails[acno1]['balance']
+  
+            });
+  
+            console.log(userDetails);
+  
+            return  {statusCode: 200,
+            status:true,
+            message:`${amount} debited and newBalance is ${userDetails[acno1]['balance']} `
+          }
+          } else {
+            return{
+              statusCode: 401,
+              status:false,
+              message:'Insufficient balance'
+            }
+          }
+        } else {
+          return {
+            statusCode: 401,
+            status:false,
+            message:'In correct password'
+          }
+        }
+      } else {
+        return {
+          statusCode: 401,
+          status:false,
+          message:'user does not exist'
+        }
+      }
+    }
+
+    // transaction
+
+const getTransaction = (acno)=>{
+  if(acno in userDetails){
+  return {statusCode: 200,
+    status:true,
+    message:userDetails[acno]['transaction']
+  }
+}
+else{
+  return  {
+    statusCode: 401,
+    status:false,
+    message:'user does not exist'
+  }
+}
+}
+  
+
+
   module.exports ={
-    register
+    register,
+    login,
+    deposit,
+    withdraw,
+    getTransaction
   }
