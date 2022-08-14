@@ -4,6 +4,9 @@
 
 const { request } = require('express')
 
+  // import jsonwebtoken
+  const jwt =require('jsonwebtoken')
+
 
 const express = require('express')
 
@@ -11,8 +14,19 @@ const express = require('express')
 
 const app = express()
 
+// imports CORS
+const cors = require('cors')
+
+
+//give command to share data via cors
+
+app.use(cors({
+    origin:'http://localhost:4200'
+}))
+
 // import data service
 const datService = require('./service/data.service')
+
 
 
 app.use(express.json())
@@ -43,37 +57,84 @@ app.delete('/',(req,res)=>{
 })
 // login
 
+//jwtmiddleWare - to validate token
+
+const  jwtmiddleWare =(req,res,next)=>{
+    try{
+        console.log('router specific middleware');
+        const token = req.headers["x-access-token"]
+        // validate -verify()
+        const data = jwt.verify(token,'supersecrtkey12345') 
+        console.log(data);
+        next() 
+    }
+    catch{
+        res.status(422).json({
+            statusCode: 422,
+            status:false,
+            message:'Please login'
+        })
+       
+
+    }
+}
+
+
+
+
 //register api
+
+
+
+
 //post - create data
 app.post('/register',(req,res)=>{
-const result = datService.register(req.body.acno,req.body.username,req.body.password)
-   
+ datService.register(req.body.acno,req.body.username,req.body.password)
+   .then(result=>{
     res.status(result.statusCode).json(result)
+
+   })
 })
 
 // login
 app.post('/login',(req,res)=>{
-    const result = datService.login(req.body.acno,req.body.pswd)
+     datService.login(req.body.acno,req.body.pswd)
+    .then(result=>{
         res.status(result.statusCode).json(result)
+        })
     })
 
   
     // deposit
-app.post('/deposit',(req,res)=>{
-    const result = datService.deposit(req.body.acno,req.body.pswd,req.body.amt)
+app.post('/deposit',jwtmiddleWare,(req,res)=>{
+    datService.deposit(req.body.acno,req.body.pswd,req.body.amt)
+    .then(result=>{
         res.status(result.statusCode).json(result)
+        })
     })
 
       // withdraw
-app.post('/withdraw',(req,res)=>{
-    const result = datService.withdraw(req.body.acno1,req.body.pswd1,req.body.amt1)
+app.post('/withdraw',jwtmiddleWare,(req,res)=>{
+    datService.withdraw(req.body.acno1,req.body.pswd1,req.body.amt1)
+    .then(result=>{
         res.status(result.statusCode).json(result)
+        })
     })
 
           // getTransaction
-app.post('/getTransaction',(req,res)=>{
-    const result = datService.getTransaction(req.body.acno)
+app.post('/transaction',jwtmiddleWare,(req,res)=>{
+    datService.getTransaction(req.body.acno)
+    .then(result=>{
         res.status(result.statusCode).json(result)
+        })
+    })
+
+    //delete Acc
+    app.delete('/deleteAcc/: acno',(req,res)=>{
+        dataService.deleteAcc(req.params.acno)
+        .then(result=>{
+            res.status(result.statusCode).json(result)
+        })
     })
 
 
